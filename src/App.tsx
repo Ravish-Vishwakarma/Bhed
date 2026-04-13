@@ -2,7 +2,7 @@
 // import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 import Header from "./components/app-bar";
-import { Button } from "./components/ui/button";
+import Body from "./components/body";
 
 function App() {
   // const [greetMsg, setGreetMsg] = useState("");
@@ -16,7 +16,7 @@ function App() {
   return (
     <main >
       <Header></Header>
-      <Button>Hello</Button>
+      <Body></Body>
     </main>
   );
 }
