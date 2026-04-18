@@ -2,10 +2,8 @@ import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Terminal, AppWindow } from "lucide-react"
 import { AddCommand, AddExecutable } from "./task-action-dialog"
 export function AddNewTask() {
     return (

@@ -15,9 +15,10 @@ type TaskCardProps = {
     time: string;
     kind: string;
     content: string;
+    day: string;
 };
 
-export function TaskCard({ id, name, time, kind, content }: TaskCardProps) {
+export function TaskCard({ id, name, time, kind, content, day }: TaskCardProps) {
     return (
         <Card className="w-full max-w-sm">
             <CardHeader>
@@ -34,6 +35,7 @@ export function TaskCard({ id, name, time, kind, content }: TaskCardProps) {
                         time={time}
                         kind={kind}
                         content={content}
+                        day={day}
                     />
                 </CardAction>
             </CardHeader>

@@ -3,14 +3,9 @@ import { Button } from './ui/button';
 import { useTheme } from '@/lib/theme-provider';
 import { AddNewTask } from './add-new-task';
 import { Separator } from './ui/separator';
-import { invoke } from '@tauri-apps/api/core';
 
 function Header() {
     const { theme, toggleTheme } = useTheme();
-    async function add_task() {
-        const response = await invoke("add_task", { name: "Hello", time: "10:20", kind: "command", content: "python.exe" })
-        console.log(response)
-    }
     return (
         <header className="h-10 w-full border-b bg-background/80 backdrop-blur">
             <div className="flex h-full items-center justify-between px-2">

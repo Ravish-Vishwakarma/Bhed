@@ -11,7 +11,8 @@ fn init_db() -> Result<()> {
             name TEXT NOT NULL,
             time TEXT NOT NULL,
             kind TEXT NOT NULL,
-            content TEXT NOT NULL
+            content TEXT NOT NULL,
+            day TEXT NOT NULL
         )",
         [],
     )?;
@@ -20,12 +21,18 @@ fn init_db() -> Result<()> {
 }
 
 #[tauri::command]
-fn add_task(name: String, time: String, kind: String, content: String) -> Result<(), String> {
+fn add_task(
+    name: String,
+    time: String,
+    kind: String,
+    content: String,
+    day: String,
+) -> Result<(), String> {
     let conn = Connection::open("bhed.db").map_err(|e| e.to_string())?;
 
     conn.execute(
-        "INSERT INTO tasks (name, time, kind, content) VALUES (?1,?2,?3,?4)",
-        rusqlite::params![name, time, kind, content],
+        "INSERT INTO tasks (name, time, kind, content, day) VALUES (?1,?2,?3,?4,?5)",
+        rusqlite::params![name, time, kind, content, day],
     )
     .map_err(|e| e.to_string())?;
 
@@ -41,6 +48,7 @@ struct Task {
     time: String,
     kind: String,
     content: String,
+    day: String,
 }
 
 #[tauri::command]
@@ -48,7 +56,7 @@ fn read_task() -> Result<Vec<Task>, String> {
     let conn = Connection::open("bhed.db").map_err(|e| e.to_string())?;
 
     let mut stmt = conn
-        .prepare("SELECT id, name, time, kind, content FROM tasks")
+        .prepare("SELECT id, name, time, kind, content, day FROM tasks")
         .map_err(|e| e.to_string())?;
 
     let rows = stmt
@@ -59,6 +67,7 @@ fn read_task() -> Result<Vec<Task>, String> {
                 time: row.get(2)?,
                 kind: row.get(3)?,
                 content: row.get(4)?,
+                day: row.get(5)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -89,12 +98,13 @@ fn update_task(
     time: String,
     kind: String,
     content: String,
+    day: String,
 ) -> Result<(), String> {
     let conn = Connection::open("bhed.db").map_err(|e| e.to_string())?;
 
     conn.execute(
-        "UPDATE tasks SET name = ?1, time = ?2, kind = ?3, content = ?4 WHERE id = ?5",
-        rusqlite::params![name, time, kind, content, id],
+        "UPDATE tasks SET name = ?1, time = ?2, kind = ?3, content = ?4, day=?5 WHERE id = ?6",
+        rusqlite::params![name, time, kind, content, day, id],
     )
     .map_err(|e| e.to_string())?;
 

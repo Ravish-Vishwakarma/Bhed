@@ -12,8 +12,9 @@ type TaskCardProps = {
     time: string;
     kind: string;
     content: string;
+    day: string;
 };
-function CardMenuPopover({ id, name, time, kind, content }: TaskCardProps) {
+function CardMenuPopover({ id, name, time, kind, content, day }: TaskCardProps) {
     return (
         < DropdownMenu >
             <DropdownMenuTrigger asChild>
@@ -28,6 +29,7 @@ function CardMenuPopover({ id, name, time, kind, content }: TaskCardProps) {
                     time={time}
                     kind={kind}
                     content={content}
+                    day={day}
                 ></MoreInfoDialog>
                 <EditTaskDialog
                     id={id}
@@ -35,6 +37,7 @@ function CardMenuPopover({ id, name, time, kind, content }: TaskCardProps) {
                     time={time}
                     kind={kind}
                     content={content}
+                    day={day}
                 ></EditTaskDialog>
                 <DeleteTaskDialog
                     id={id}

@@ -10,7 +10,8 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { DropdownMenuItem } from "./ui/dropdown-menu"
-import { Info, Pencil, Trash2Icon, Folder, Clock, Terminal, AppWindow, Plus } from "lucide-react"
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
+import { Info, Pencil, Trash2Icon, Folder, Clock, Terminal, AppWindow, Plus, CalendarDays } from "lucide-react"
 import { Input } from "./ui/input"
 import { Separator } from "./ui/separator"
 import { Badge } from "./ui/badge"
@@ -23,8 +24,9 @@ type TaskCardProps = {
     time: string;
     kind: string;
     content: string;
+    day: string;
 };
-function MoreInfoDialog({ name, time, kind, content }: TaskCardProps) {
+function MoreInfoDialog({ name, time, kind, content, day }: TaskCardProps) {
     return (
         <Dialog>
             <form>
@@ -56,6 +58,18 @@ function MoreInfoDialog({ name, time, kind, content }: TaskCardProps) {
                         <p>{time}</p>
                     </div>
 
+                    <div className="flex items-center gap-2">
+                        <Button size={"icon"} variant={"ghost"}>
+                            <CalendarDays size={"15"}></CalendarDays>
+                        </Button>
+
+                        {
+                            (JSON.parse(day) as string[]).map(d => (
+                                <Badge variant={"secondary"}>{d}</Badge>
+                            ))
+                        }
+                    </div>
+
                     <DialogFooter>
                         <DialogClose asChild>
                             <Button variant={"outline"}>Okay</Button>
@@ -67,13 +81,30 @@ function MoreInfoDialog({ name, time, kind, content }: TaskCardProps) {
     )
 }
 
-function EditTaskDialog({ id, name, time, kind, content }: TaskCardProps) {
+function EditTaskDialog({ id, name, time, kind, content, day }: TaskCardProps) {
     const [tname, setName] = useState(name);
     const [tcontent, setContent] = useState(content);
     const [ttime, setTime] = useState(time);
+
+    const [selectedDays, setSelectedDays] = useState<string[]>(JSON.parse(day))
+
     async function edit_task() {
-        const response = await invoke("update_task", { name: tname, time: ttime, kind: kind, content: tcontent, id: id })
+        await invoke("update_task", {
+            name: tname,
+            time: ttime,
+            kind: kind,
+            content: tcontent,
+            day: JSON.stringify(selectedDays),
+            id: id
+        })
     }
+    const chipStyle = `
+  rounded-full px-4 py-1 border
+  data-[state=on]:bg-primary
+  data-[state=on]:text-white
+  data-[state=on]:border-primary
+  dark:data-[state=on]:text-black
+`
     return (
         <Dialog>
             <form>
@@ -118,7 +149,16 @@ function EditTaskDialog({ id, name, time, kind, content }: TaskCardProps) {
                                 </div>
                             </div>
                     }
+                    <div className="flex justify-center">
 
+                        <ToggleGroup type="multiple" variant="outline" value={selectedDays} onValueChange={setSelectedDays}>
+                            {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(day => (
+                                <ToggleGroupItem key={day} value={day} className={chipStyle}>
+                                    {day}
+                                </ToggleGroupItem>
+                            ))}
+                        </ToggleGroup>
+                    </div>
                     <Separator></Separator>
                     <div className="flex gap-2 items-center">
 
@@ -145,7 +185,7 @@ function EditTaskDialog({ id, name, time, kind, content }: TaskCardProps) {
 function DeleteTaskDialog({ id }: { id: number }) {
 
     async function delete_task() {
-        const response = await invoke("delete_task", { id: id })
+        await invoke("delete_task", { id: id })
     }
     return (
         <Dialog>
@@ -181,8 +221,23 @@ function AddCommand() {
     const [content, setContent] = useState("");
     const [time, setTime] = useState("00:00:00");
     async function add_task() {
-        const response = await invoke("add_task", { name: name, time: time, kind: "command", content: content })
+        await invoke("add_task", {
+            name: name,
+            time: time,
+            kind: "command",
+            content: content,
+            day: JSON.stringify(selectedDays)
+        })
     }
+    const chipStyle = `
+  rounded-full px-4 py-1 border
+  data-[state=on]:bg-primary
+  data-[state=on]:text-white
+  data-[state=on]:border-primary
+  dark:data-[state=on]:text-black
+`
+    const [selectedDays, setSelectedDays] = useState<string[]>([])
+
     return (
         <Dialog>
             <form>
@@ -222,6 +277,17 @@ function AddCommand() {
                             id="time-picker-optional"
                             step="1" />
                     </div>
+                    <div className="flex justify-center">
+
+                        <ToggleGroup type="multiple" variant="outline" value={selectedDays} onValueChange={setSelectedDays}>
+                            {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(day => (
+                                <ToggleGroupItem key={day} value={day} className={chipStyle}>
+                                    {day}
+                                </ToggleGroupItem>
+                            ))}
+                        </ToggleGroup>
+                    </div>
+
                     <DialogFooter>
                         <DialogClose asChild>
                             <Button variant="outline">Cancel</Button>
@@ -237,9 +303,17 @@ function AddExecutable() {
     const [name, setName] = useState("");
     const [content, setContent] = useState("");
     const [time, setTime] = useState("00:00:00");
+    const [selectedDays, setSelectedDays] = useState<string[]>([])
     async function add_task() {
-        const response = await invoke("add_task", { name: name, time: time, kind: "executable", content: content })
+        await invoke("add_task", { name: name, time: time, kind: "executable", content: content, day: JSON.stringify(selectedDays) })
     }
+    const chipStyle = `
+  rounded-full px-4 py-1 border
+  data-[state=on]:bg-primary
+  data-[state=on]:text-white
+  data-[state=on]:border-primary
+  dark:data-[state=on]:text-black
+`
     return (
         <Dialog>
             <form>
@@ -277,6 +351,16 @@ function AddExecutable() {
                             onChange={(e) => setTime(e.target.value)}
                             id="time-picker-optional"
                             step="1" />
+                    </div>
+                    <div className="flex justify-center">
+
+                        <ToggleGroup type="multiple" variant="outline" value={selectedDays} onValueChange={setSelectedDays}>
+                            {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(day => (
+                                <ToggleGroupItem key={day} value={day} className={chipStyle}>
+                                    {day}
+                                </ToggleGroupItem>
+                            ))}
+                        </ToggleGroup>
                     </div>
                     <DialogFooter>
                         <DialogClose asChild>

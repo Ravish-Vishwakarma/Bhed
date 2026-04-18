@@ -2,6 +2,7 @@ import { TaskCard } from "./task-card"
 import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from "react";
 
+
 function Body() {
     type Task = {
         id: number;
@@ -9,6 +10,7 @@ function Body() {
         time: string;
         kind: string;
         content: string;
+        day: string;
     };
     const [tasks, setTasks] = useState<Task[]>([]);
     useEffect(() => {
@@ -31,9 +33,11 @@ function Body() {
                         time={task.time}
                         kind={task.kind}
                         content={task.content}
+                        day={task.day}
                     />
                 ))
             )}
+
         </div>
     );
 }
