@@ -6,7 +6,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { EllipsisVertical } from "lucide-react"
 import { MoreInfoDialog, EditTaskDialog, DeleteTaskDialog } from "./task-action-dialog"
-function CardMenuPopover() {
+type TaskCardProps = {
+    id: number;
+    name: string;
+    time: string;
+    kind: string;
+    content: string;
+};
+function CardMenuPopover({ id, name, time, kind, content }: TaskCardProps) {
     return (
         < DropdownMenu >
             <DropdownMenuTrigger asChild>
@@ -15,9 +22,23 @@ function CardMenuPopover() {
 
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-                <MoreInfoDialog></MoreInfoDialog>
-                <EditTaskDialog></EditTaskDialog>
-                <DeleteTaskDialog></DeleteTaskDialog>
+                <MoreInfoDialog
+                    id={id}
+                    name={name}
+                    time={time}
+                    kind={kind}
+                    content={content}
+                ></MoreInfoDialog>
+                <EditTaskDialog
+                    id={id}
+                    name={name}
+                    time={time}
+                    kind={kind}
+                    content={content}
+                ></EditTaskDialog>
+                <DeleteTaskDialog
+                    id={id}
+                ></DeleteTaskDialog>
             </DropdownMenuContent>
         </DropdownMenu >
     )

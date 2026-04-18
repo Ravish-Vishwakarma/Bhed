@@ -8,18 +8,38 @@ import {
 
 import CardMenuPopover from "./card-menu-popover"
 import { Badge } from "./ui/badge"
-export function TaskCard() {
+
+type TaskCardProps = {
+    id: number;
+    name: string;
+    time: string;
+    kind: string;
+    content: string;
+};
+
+export function TaskCard({ id, name, time, kind, content }: TaskCardProps) {
     return (
         <Card className="w-full max-w-sm">
             <CardHeader>
-                <CardTitle>Title <Badge variant="outline" className="ml-2">Executable</Badge></CardTitle>
+                <CardTitle>
+                    {name}
+                    <Badge variant="outline" className="ml-2">
+                        {kind}
+                    </Badge>
+                </CardTitle>
                 <CardAction>
-                    <CardMenuPopover></CardMenuPopover>
+                    <CardMenuPopover
+                        id={id}
+                        name={name}
+                        time={time}
+                        kind={kind}
+                        content={content}
+                    />
                 </CardAction>
             </CardHeader>
             <CardContent>
-                Next Trigger:
+                Next Trigger: {time}
             </CardContent>
         </Card>
-    )
+    );
 }

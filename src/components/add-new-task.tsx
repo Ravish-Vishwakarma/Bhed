@@ -6,6 +6,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Terminal, AppWindow } from "lucide-react"
+import { AddCommand, AddExecutable } from "./task-action-dialog"
 export function AddNewTask() {
     return (
         <DropdownMenu>
@@ -13,8 +14,8 @@ export function AddNewTask() {
                 <Button variant="outline" className="mr-1 h-8">+ Add</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-                <DropdownMenuItem><Terminal></Terminal>Command</DropdownMenuItem>
-                <DropdownMenuItem><AppWindow></AppWindow>Executable</DropdownMenuItem>
+                <AddCommand></AddCommand>
+                <AddExecutable></AddExecutable>
             </DropdownMenuContent>
         </DropdownMenu>
     )
