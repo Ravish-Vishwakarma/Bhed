@@ -82,13 +82,37 @@ fn delete_task(id: i32) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn update_task(
+    id: i32,
+    name: String,
+    time: String,
+    kind: String,
+    content: String,
+) -> Result<(), String> {
+    let conn = Connection::open("bhed.db").map_err(|e| e.to_string())?;
+
+    conn.execute(
+        "UPDATE tasks SET name = ?1, time = ?2, kind = ?3, content = ?4 WHERE id = ?5",
+        rusqlite::params![name, time, kind, content, id],
+    )
+    .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     init_db().expect("Failed to init DB");
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![add_task, read_task, delete_task])
+        .invoke_handler(tauri::generate_handler![
+            add_task,
+            read_task,
+            delete_task,
+            update_task
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

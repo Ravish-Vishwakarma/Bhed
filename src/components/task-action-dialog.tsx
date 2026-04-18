@@ -41,9 +41,12 @@ function MoreInfoDialog({ name, time, kind, content }: TaskCardProps) {
                         </div>
                     </DialogHeader>
                     <div className="flex items-center gap-3">
-                        <Button size={"icon"} variant={"default"}>
-                            <Folder></Folder>
-                        </Button>
+
+                        {kind == "executable" ?
+                            <Button size={"icon"} variant={"default"}>
+                                <Folder></Folder>
+                            </Button> : <Terminal></Terminal>
+                        }
                         <p>{content}</p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -68,6 +71,9 @@ function EditTaskDialog({ id, name, time, kind, content }: TaskCardProps) {
     const [tname, setName] = useState(name);
     const [tcontent, setContent] = useState(content);
     const [ttime, setTime] = useState(time);
+    async function edit_task() {
+        const response = await invoke("update_task", { name: tname, time: ttime, kind: kind, content: tcontent, id: id })
+    }
     return (
         <Dialog>
             <form>
@@ -92,13 +98,27 @@ function EditTaskDialog({ id, name, time, kind, content }: TaskCardProps) {
                             onChange={(e) => setName(e.target.value)}
                             placeholder="Enter text" />
                     </div>
-                    <div className="flex gap-2 items-center">
-                        <Button size={"icon"}>
-                            <Folder></Folder>
-                        </Button>
-                        <Input value={tcontent}
-                            onChange={(e) => setContent(e.target.value)} placeholder="Enter text" />
-                    </div>
+                    {
+                        kind == "executable" ?
+                            <div className="flex gap-2 items-center">
+                                <Button size={"icon"}>
+                                    <Folder></Folder>
+                                </Button>
+                                <Input value={tcontent}
+                                    onChange={(e) => setContent(e.target.value)} placeholder="Enter text" />
+                            </div>
+                            : <div>
+                                <p className="mb-1">Command:</p>
+                                <div className="flex gap-2 items-center">
+                                    <Textarea
+                                        value={tcontent}
+                                        onChange={(e) => setContent(e.target.value)}
+                                        placeholder="Enter Command"
+                                    />
+                                </div>
+                            </div>
+                    }
+
                     <Separator></Separator>
                     <div className="flex gap-2 items-center">
 
@@ -114,7 +134,7 @@ function EditTaskDialog({ id, name, time, kind, content }: TaskCardProps) {
                         <DialogClose asChild>
                             <Button variant="outline">Cancel</Button>
                         </DialogClose>
-                        <Button type="submit">Save changes</Button>
+                        <Button type="submit" onClick={edit_task}>Save changes</Button>
                     </DialogFooter>
                 </DialogContent>
             </form>
@@ -214,9 +234,12 @@ function AddCommand() {
     )
 }
 function AddExecutable() {
-    const [tname, setName] = useState("");
-    const [tcontent, setContent] = useState("");
-    const [ttime, setTime] = useState("00:00:00");
+    const [name, setName] = useState("");
+    const [content, setContent] = useState("");
+    const [time, setTime] = useState("00:00:00");
+    async function add_task() {
+        const response = await invoke("add_task", { name: name, time: time, kind: "executable", content: content })
+    }
     return (
         <Dialog>
             <form>
@@ -233,7 +256,7 @@ function AddExecutable() {
                     </DialogHeader>
                     <div className="flex gap-2 items-center">
                         Title:
-                        <Input value={tname}
+                        <Input value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="Enter text" />
                     </div>
@@ -241,7 +264,7 @@ function AddExecutable() {
                         <Button size={"icon"}>
                             <Folder></Folder>
                         </Button>
-                        <Input value={tcontent}
+                        <Input value={content}
                             onChange={(e) => setContent(e.target.value)} placeholder="Enter Location" />
                     </div>
                     <Separator></Separator>
@@ -250,7 +273,7 @@ function AddExecutable() {
                         <p className="font-bold">Schedule:</p>
                         <Input
                             type="time"
-                            value={ttime}
+                            value={time}
                             onChange={(e) => setTime(e.target.value)}
                             id="time-picker-optional"
                             step="1" />
@@ -259,7 +282,7 @@ function AddExecutable() {
                         <DialogClose asChild>
                             <Button variant="outline">Cancel</Button>
                         </DialogClose>
-                        <Button type="submit"><Plus></Plus>Add</Button>
+                        <Button onClick={add_task} type="submit"><Plus></Plus>Add</Button>
                     </DialogFooter>
                 </DialogContent>
             </form>
