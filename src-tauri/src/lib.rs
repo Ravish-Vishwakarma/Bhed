@@ -1,6 +1,11 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
 use rusqlite::{Connection, Result};
+use tauri::{
+    menu::{Menu, MenuItem},
+    tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
+    Manager,
+};
 
 fn init_db() -> Result<()> {
     let conn = Connection::open("bhed.db")?;
@@ -116,6 +121,43 @@ pub fn run() {
     init_db().expect("Failed to init DB");
 
     tauri::Builder::default()
+        .setup(|app| {
+            let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+
+            let menu = Menu::with_items(app, &[&show, &quit])?;
+
+            let _tray = TrayIconBuilder::new()
+                .menu(&menu)
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    "show" => {
+                        let window = app.get_webview_window("main").unwrap();
+                        window.show().unwrap();
+                        window.set_focus().unwrap();
+                    }
+                    _ => {}
+                })
+                .build(app)?;
+
+            Ok(())
+        })
+        .on_tray_icon_event(|tray, event| {
+            if let TrayIconEvent::Click { button, .. } = event {
+                if button == MouseButton::Left {
+                    let app = tray.app_handle();
+                    let window = app.get_webview_window("main").unwrap();
+
+                    if window.is_visible().unwrap() {
+                        window.hide().unwrap();
+                    } else {
+                        window.show().unwrap();
+                    }
+                }
+            }
+        })
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
