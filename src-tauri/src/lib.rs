@@ -116,6 +116,7 @@ pub fn run() {
     init_db().expect("Failed to init DB");
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             add_task,

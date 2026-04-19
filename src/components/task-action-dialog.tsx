@@ -17,6 +17,7 @@ import { Separator } from "./ui/separator"
 import { Badge } from "./ui/badge"
 import { useState } from "react"
 import { Textarea } from "./ui/textarea"
+import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from "@tauri-apps/api/core"
 type TaskCardProps = {
     id: number;
@@ -105,6 +106,18 @@ function EditTaskDialog({ id, name, time, kind, content, day }: TaskCardProps) {
   data-[state=on]:border-primary
   dark:data-[state=on]:text-black
 `
+    async function chooseFile() {
+        const file = await open({
+            multiple: false,
+            filters: [
+                { name: 'Executables', extensions: ['exe', 'msi', 'app', 'bat', 'sh'] },
+                { name: 'All Files', extensions: ['*'] }
+            ]
+        });
+        if (file) {
+            setContent(file)
+        }
+    }
     return (
         <Dialog>
             <form>
@@ -132,7 +145,7 @@ function EditTaskDialog({ id, name, time, kind, content, day }: TaskCardProps) {
                     {
                         kind == "executable" ?
                             <div className="flex gap-2 items-center">
-                                <Button size={"icon"}>
+                                <Button size={"icon"} onClick={chooseFile}>
                                     <Folder></Folder>
                                 </Button>
                                 <Input value={tcontent}
@@ -314,6 +327,19 @@ function AddExecutable() {
   data-[state=on]:border-primary
   dark:data-[state=on]:text-black
 `
+    async function chooseFile() {
+        const file = await open({
+            multiple: false,
+            filters: [
+                { name: 'Executables', extensions: ['exe', 'msi', 'app', 'bat', 'sh'] },
+                { name: 'All Files', extensions: ['*'] }
+            ]
+        });
+        if (file) {
+            setContent(file)
+        }
+    }
+
     return (
         <Dialog>
             <form>
@@ -335,7 +361,7 @@ function AddExecutable() {
                             placeholder="Enter text" />
                     </div>
                     <div className="flex gap-2 items-center">
-                        <Button size={"icon"}>
+                        <Button size={"icon"} onClick={chooseFile}>
                             <Folder></Folder>
                         </Button>
                         <Input value={content}
