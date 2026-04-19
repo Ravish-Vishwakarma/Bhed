@@ -22,21 +22,26 @@ function Body() {
         read_tasks();
     }, []);
     return (
-        <div className="m-2 grid grid-cols-3 gap-3">
+        <div>
+
             {tasks.length === 0 ? (
-                <p>No tasks yet</p>
+                <p className="flex justify-center">No tasks yet</p>
             ) : (
-                tasks.map((task) => (
-                    <TaskCard
-                        id={task.id}
-                        name={task.name}
-                        time={task.time}
-                        kind={task.kind}
-                        content={task.content}
-                        day={task.day}
-                    />
-                ))
-            )}
+                <div className="m-2 grid grid-cols-3 gap-3">
+                    {tasks.map((task) => (
+                        <TaskCard
+                            id={task.id}
+                            name={task.name}
+                            time={task.time}
+                            kind={task.kind}
+                            content={task.content}
+                            day={task.day}
+                        />
+                    ))}
+                </div>
+            )
+
+            }
 
         </div>
     );

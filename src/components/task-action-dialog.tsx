@@ -19,6 +19,7 @@ import { useState } from "react"
 import { Textarea } from "./ui/textarea"
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from "@tauri-apps/api/core"
+import { revealItemInDir } from '@tauri-apps/plugin-opener';
 type TaskCardProps = {
     id: number;
     name: string;
@@ -28,6 +29,9 @@ type TaskCardProps = {
     day: string;
 };
 function MoreInfoDialog({ name, time, kind, content, day }: TaskCardProps) {
+    async function showInFolder(path: string) {
+        await revealItemInDir(path);
+    }
     return (
         <Dialog>
             <form>
@@ -46,7 +50,11 @@ function MoreInfoDialog({ name, time, kind, content, day }: TaskCardProps) {
                     <div className="flex items-center gap-3">
 
                         {kind == "executable" ?
-                            <Button size={"icon"} variant={"default"}>
+                            <Button size={"icon"} variant={"default"} onClick={() => {
+                                if (content) {
+                                    showInFolder(content);
+                                }
+                            }}>
                                 <Folder></Folder>
                             </Button> : <Terminal></Terminal>
                         }
