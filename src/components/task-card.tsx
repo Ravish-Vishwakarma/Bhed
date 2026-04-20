@@ -8,6 +8,7 @@ import {
 
 import CardMenuPopover from "./card-menu-popover"
 import { Badge } from "./ui/badge"
+import { Clock } from "lucide-react";
 
 type TaskCardProps = {
     id: number;
@@ -39,8 +40,18 @@ export function TaskCard({ id, name, time, kind, content, day }: TaskCardProps) 
                     />
                 </CardAction>
             </CardHeader>
+
             <CardContent>
-                Trigger At: {time}
+                <div className="flex items-center gap-1">
+                    <Clock className="size-4"></Clock> {time}
+                </div>
+                <div className="flex mt-2 gap-1">
+                    {
+                        (JSON.parse(day) as string[]).map(d => (
+                            <Badge variant={"secondary"}>{d}</Badge>
+                        ))
+                    }
+                </div>
             </CardContent>
         </Card>
     );

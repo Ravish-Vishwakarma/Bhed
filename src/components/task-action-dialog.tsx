@@ -247,7 +247,7 @@ function DeleteTaskDialog({ id }: { id: number }) {
                     <DialogHeader>
                         <DialogTitle>Delete</DialogTitle>
                         <DialogDescription>
-                            Are you sure you want to delete this task? {id}
+                            Are you sure you want to delete this task?
                         </DialogDescription>
                     </DialogHeader>
 

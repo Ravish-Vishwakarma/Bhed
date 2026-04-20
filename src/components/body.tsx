@@ -30,6 +30,7 @@ function Body() {
                 <div className="m-2 grid grid-cols-3 gap-3">
                     {tasks.map((task) => (
                         <TaskCard
+                            key={task.id}
                             id={task.id}
                             name={task.name}
                             time={task.time}
