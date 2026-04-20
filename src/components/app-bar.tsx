@@ -3,8 +3,10 @@ import { Button } from './ui/button';
 import { useTheme } from '@/lib/theme-provider';
 import { AddNewTask } from './add-new-task';
 import { Separator } from './ui/separator';
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 function Header() {
+    const appWindow = getCurrentWindow();
     const { theme, toggleTheme } = useTheme();
     return (
         <header className="h-10 w-full border-b bg-background/80 backdrop-blur">
@@ -19,13 +21,13 @@ function Header() {
                         {theme === "light" ? <Moon /> : <Sun />}
                     </Button>
                     <Separator orientation="vertical" className="hidden md:block" />
-                    <Button variant={"ghost"} size="icon">
+                    <Button onClick={() => appWindow.minimize()} variant={"ghost"} size="icon">
                         <Minus></Minus>
                     </Button>
-                    <Button variant={"ghost"} size="icon">
+                    <Button onClick={() => appWindow.toggleMaximize()} variant={"ghost"} size="icon">
                         <Square></Square>
                     </Button>
-                    <Button variant={"ghost"} size="icon">
+                    <Button onClick={() => appWindow.hide()} variant={"ghost"} size="icon">
                         <X></X>
                     </Button>
                 </div>
