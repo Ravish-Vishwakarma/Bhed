@@ -284,6 +284,8 @@ pub fn run() {
             let menu = Menu::with_items(app, &[&show, &quit])?;
 
             let _tray = TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
+                .tooltip("BHED")
                 .menu(&menu)
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "quit" => {
