@@ -16,6 +16,7 @@ import { Input } from "./ui/input"
 import { Separator } from "./ui/separator"
 import { Badge } from "./ui/badge"
 import { useState } from "react"
+import { useTasks } from "../lib/task-context";
 import { Textarea } from "./ui/textarea"
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from "@tauri-apps/api/core"
@@ -91,6 +92,7 @@ function MoreInfoDialog({ name, time, kind, content, day }: TaskCardProps) {
 }
 
 function EditTaskDialog({ id, name, time, kind, content, day }: TaskCardProps) {
+    const { refresh } = useTasks();
     const [tname, setName] = useState(name);
     const [tcontent, setContent] = useState(content);
     const [ttime, setTime] = useState(time);
@@ -117,6 +119,7 @@ function EditTaskDialog({ id, name, time, kind, content, day }: TaskCardProps) {
             day: JSON.stringify(selectedDays),
             id
         });
+        refresh();
     }
 
     const chipStyle = `
@@ -223,7 +226,9 @@ function EditTaskDialog({ id, name, time, kind, content, day }: TaskCardProps) {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button onClick={edit_task}>Save changes</Button>
+                    <DialogClose asChild>
+                        <Button onClick={edit_task} type="button">Save changes</Button>
+                    </DialogClose>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -231,9 +236,11 @@ function EditTaskDialog({ id, name, time, kind, content, day }: TaskCardProps) {
 }
 
 function DeleteTaskDialog({ id }: { id: number }) {
+    const { refresh } = useTasks();
 
     async function delete_task() {
-        await invoke("delete_task", { id: id })
+        await invoke("delete_task", { id: id });
+        refresh();
     }
     return (
         <Dialog>
@@ -266,6 +273,7 @@ function DeleteTaskDialog({ id }: { id: number }) {
 
 
 function AddCommand() {
+    const { refresh } = useTasks();
     const [name, setName] = useState("");
     const [content, setContent] = useState("");
     const [time, setTime] = useState("00:00:00");
@@ -291,6 +299,7 @@ function AddCommand() {
             content,
             day: JSON.stringify(selectedDays),
         });
+        refresh();
     }
 
     const chipStyle = `
@@ -364,7 +373,9 @@ function AddCommand() {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button onClick={add_task}><Plus /> Add</Button>
+                    <DialogClose asChild>
+                        <Button onClick={add_task} type="button"><Plus /> Add</Button>
+                    </DialogClose>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -372,6 +383,7 @@ function AddCommand() {
 }
 
 function AddExecutable() {
+    const { refresh } = useTasks();
     const [name, setName] = useState("");
     const [content, setContent] = useState("");
     const [time, setTime] = useState("00:00:00");
@@ -391,6 +403,7 @@ function AddExecutable() {
 
         setErrors({});
         await invoke("add_task", { name, time, kind: "executable", content, day: JSON.stringify(selectedDays) });
+        refresh();
     }
 
     const chipStyle = `
@@ -481,7 +494,9 @@ function AddExecutable() {
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button onClick={add_task}><Plus /> Add</Button>
+                    <DialogClose asChild>
+                        <Button onClick={add_task} type="button"><Plus /> Add</Button>
+                    </DialogClose>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

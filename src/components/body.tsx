@@ -1,29 +1,11 @@
 import { TaskCard } from "./task-card"
-import { invoke } from '@tauri-apps/api/core';
-import { useEffect, useState } from "react";
-
+import { useTasks } from "../lib/task-context";
 
 function Body() {
-    type Task = {
-        id: number;
-        name: string;
-        time: string;
-        kind: string;
-        content: string;
-        day: string;
-    };
-    const [tasks, setTasks] = useState<Task[]>([]);
-    useEffect(() => {
-        async function read_tasks() {
-            const response = await invoke<Task[]>("read_task");
-            setTasks(response);
-        }
+    const { tasks } = useTasks();
 
-        read_tasks();
-    }, []);
     return (
         <div>
-
             {tasks.length === 0 ? (
                 <p className="flex justify-center">No tasks yet</p>
             ) : (
@@ -40,10 +22,7 @@ function Body() {
                         />
                     ))}
                 </div>
-            )
-
-            }
-
+            )}
         </div>
     );
 }
