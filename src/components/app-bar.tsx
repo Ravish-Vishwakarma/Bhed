@@ -10,7 +10,7 @@ function Header() {
     const { theme, toggleTheme } = useTheme();
     return (
         <header className="h-10 w-full border-b bg-background/80 backdrop-blur">
-            <div className="flex h-full items-center justify-between px-2">
+            <div data-tauri-drag-region className="flex h-full items-center justify-between px-2">
                 <h1 className="text-[18px] font-medium tracking-tight">
                     BHED
                 </h1>
