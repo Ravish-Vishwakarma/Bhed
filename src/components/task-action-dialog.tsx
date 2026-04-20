@@ -58,7 +58,7 @@ function MoreInfoDialog({ name, time, kind, content, day }: TaskCardProps) {
                                 <Folder></Folder>
                             </Button> : <Terminal></Terminal>
                         }
-                        <p>{content}</p>
+                        <p className="break-all whitespace-pre-wrap max-w-full">{content}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button size={"icon"} variant={"default"}>
@@ -94,26 +94,39 @@ function EditTaskDialog({ id, name, time, kind, content, day }: TaskCardProps) {
     const [tname, setName] = useState(name);
     const [tcontent, setContent] = useState(content);
     const [ttime, setTime] = useState(time);
-
-    const [selectedDays, setSelectedDays] = useState<string[]>(JSON.parse(day))
+    const [selectedDays, setSelectedDays] = useState<string[]>(JSON.parse(day));
+    const [errors, setErrors] = useState<{ name?: string; content?: string; days?: string }>({});
 
     async function edit_task() {
+        const newErrors: typeof errors = {};
+        if (!tname.trim()) newErrors.name = "Title is required";
+        if (!tcontent.trim()) newErrors.content = kind === "executable" ? "Executable path is required" : "Command is required";
+        if (selectedDays.length === 0) newErrors.days = "Select at least one day";
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        setErrors({});
         await invoke("update_task", {
             name: tname,
             time: ttime,
-            kind: kind,
+            kind,
             content: tcontent,
             day: JSON.stringify(selectedDays),
-            id: id
-        })
+            id
+        });
     }
+
     const chipStyle = `
-  rounded-full px-4 py-1 border
-  data-[state=on]:bg-primary
-  data-[state=on]:text-white
-  data-[state=on]:border-primary
-  dark:data-[state=on]:text-black
-`
+        rounded-full px-4 py-1 border
+        data-[state=on]:bg-primary
+        data-[state=on]:text-white
+        data-[state=on]:border-primary
+        dark:data-[state=on]:text-black
+    `;
+
     async function chooseFile() {
         const file = await open({
             multiple: false,
@@ -123,84 +136,98 @@ function EditTaskDialog({ id, name, time, kind, content, day }: TaskCardProps) {
             ]
         });
         if (file) {
-            setContent(file)
+            setContent(file);
+            setErrors(p => ({ ...p, content: undefined }));
         }
     }
+
     return (
         <Dialog>
-            <form>
-                <DialogTrigger asChild>
-                    {/* <Button variant="outline">Open Dialog</Button> */}
-
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}><Pencil></Pencil> Edit</DropdownMenuItem>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-sm">
-                    <DialogHeader>
-                        <div className="flex items-center">
-                            <DialogTitle>Edit</DialogTitle>
-                            <Badge variant="outline" className="ml-2">
-                                {kind}
-                            </Badge>
-                        </div>
-
-                    </DialogHeader>
-                    <div className="flex gap-2 items-center">
-                        Title:
-                        <Input value={tname}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Enter text" />
+            <DialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <Pencil /> Edit
+                </DropdownMenuItem>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-sm">
+                <DialogHeader>
+                    <div className="flex items-center">
+                        <DialogTitle>Edit</DialogTitle>
+                        <Badge variant="outline" className="ml-2">{kind}</Badge>
                     </div>
-                    {
-                        kind == "executable" ?
-                            <div className="flex gap-2 items-center">
-                                <Button size={"icon"} onClick={chooseFile}>
-                                    <Folder></Folder>
-                                </Button>
-                                <Input value={tcontent}
-                                    onChange={(e) => setContent(e.target.value)} placeholder="Enter text" />
-                            </div>
-                            : <div>
-                                <p className="mb-1">Command:</p>
-                                <div className="flex gap-2 items-center">
-                                    <Textarea
-                                        value={tcontent}
-                                        onChange={(e) => setContent(e.target.value)}
-                                        placeholder="Enter Command"
-                                    />
-                                </div>
-                            </div>
-                    }
-                    <div className="flex justify-center">
+                </DialogHeader>
 
-                        <ToggleGroup type="multiple" variant="outline" value={selectedDays} onValueChange={setSelectedDays}>
-                            {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(day => (
-                                <ToggleGroupItem key={day} value={day} className={chipStyle}>
-                                    {day}
-                                </ToggleGroupItem>
-                            ))}
-                        </ToggleGroup>
-                    </div>
-                    <Separator></Separator>
-                    <div className="flex gap-2 items-center">
-
-                        <p className="font-bold">Schedule:</p>
+                <div className="flex gap-2 items-center">
+                    Title:
+                    <div className="flex flex-col w-full">
                         <Input
-                            type="time"
-                            value={ttime}
-                            onChange={(e) => setTime(e.target.value)}
-                            id="time-picker-optional"
-                            step="1" />
+                            value={tname}
+                            onChange={(e) => { setName(e.target.value); setErrors(p => ({ ...p, name: undefined })); }}
+                            placeholder="Enter text"
+                        />
+                        {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
                     </div>
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                        </DialogClose>
-                        <Button type="submit" onClick={edit_task}>Save changes</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </form>
+                </div>
+
+                {kind === "executable" ? (
+                    <div className="flex flex-col gap-1">
+                        <div className="flex gap-2 items-center">
+                            <Button size="icon" onClick={chooseFile}>
+                                <Folder />
+                            </Button>
+                            <Input
+                                value={tcontent}
+                                onChange={(e) => { setContent(e.target.value); setErrors(p => ({ ...p, content: undefined })); }}
+                                placeholder="Enter Location"
+                            />
+                        </div>
+                        {errors.content && <p className="text-destructive text-xs">{errors.content}</p>}
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-1">
+                        <p>Command:</p>
+                        <Textarea
+                            value={tcontent}
+                            onChange={(e) => { setContent(e.target.value); setErrors(p => ({ ...p, content: undefined })); }}
+                            placeholder="Enter Command"
+                            className="break-all whitespace-pre-wrap"
+                        />
+                        {errors.content && <p className="text-destructive text-xs">{errors.content}</p>}
+                    </div>
+                )}
+
+                <div className="flex flex-col items-center gap-1">
+                    <ToggleGroup type="multiple" variant="outline" value={selectedDays}
+                        onValueChange={(v) => { setSelectedDays(v); setErrors(p => ({ ...p, days: undefined })); }}>
+                        {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(day => (
+                            <ToggleGroupItem key={day} value={day} className={chipStyle}>
+                                {day}
+                            </ToggleGroupItem>
+                        ))}
+                    </ToggleGroup>
+                    {errors.days && <p className="text-destructive text-xs">{errors.days}</p>}
+                </div>
+
+                <Separator />
+
+                <div className="flex gap-2 items-center">
+                    <p className="font-bold">Schedule:</p>
+                    <Input
+                        type="time"
+                        value={ttime}
+                        onChange={(e) => setTime(e.target.value)}
+                        step="1"
+                    />
+                </div>
+
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button onClick={edit_task}>Save changes</Button>
+                </DialogFooter>
+            </DialogContent>
         </Dialog>
-    )
+    );
 }
 
 function DeleteTaskDialog({ id }: { id: number }) {
@@ -237,104 +264,143 @@ function DeleteTaskDialog({ id }: { id: number }) {
 }
 
 
+
 function AddCommand() {
     const [name, setName] = useState("");
     const [content, setContent] = useState("");
     const [time, setTime] = useState("00:00:00");
+    const [selectedDays, setSelectedDays] = useState<string[]>([]);
+    const [errors, setErrors] = useState<{ name?: string; content?: string; days?: string }>({});
+
     async function add_task() {
+        const newErrors: typeof errors = {};
+        if (!name.trim()) newErrors.name = "Title is required";
+        if (!content.trim()) newErrors.content = "Command is required";
+        if (selectedDays.length === 0) newErrors.days = "Select at least one day";
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        setErrors({});
         await invoke("add_task", {
-            name: name,
-            time: time,
+            name,
+            time,
             kind: "command",
-            content: content,
-            day: JSON.stringify(selectedDays)
-        })
+            content,
+            day: JSON.stringify(selectedDays),
+        });
     }
+
     const chipStyle = `
-  rounded-full px-4 py-1 border
-  data-[state=on]:bg-primary
-  data-[state=on]:text-white
-  data-[state=on]:border-primary
-  dark:data-[state=on]:text-black
-`
-    const [selectedDays, setSelectedDays] = useState<string[]>([])
+        rounded-full px-4 py-1 border
+        data-[state=on]:bg-primary
+        data-[state=on]:text-white
+        data-[state=on]:border-primary
+        dark:data-[state=on]:text-black
+    `;
 
     return (
         <Dialog>
-            <form>
-                <DialogTrigger asChild>
+            <DialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <Terminal /> Command
+                </DropdownMenuItem>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-sm">
+                <DialogHeader>
+                    <DialogTitle>Add Command</DialogTitle>
+                </DialogHeader>
 
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}><Terminal></Terminal>Command</DropdownMenuItem>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-sm">
-                    <DialogHeader>
-                        <div className="flex items-center">
-                            <DialogTitle>Add Command</DialogTitle>
-                        </div>
-
-                    </DialogHeader>
-                    <div className="flex gap-2 items-center">
-                        Title:
-                        <Input value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Enter text" />
-                    </div>
-                    <p>Command:</p>
-                    <div className="flex gap-2 items-center">
-                        <Textarea
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            placeholder="Enter Command"
-                        />
-                    </div>
-                    <Separator></Separator>
-                    <div className="flex gap-2 items-center">
-
-                        <p className="font-bold">Schedule:</p>
+                <div className="flex gap-2 items-center">
+                    Title:
+                    <div className="flex flex-col w-full">
                         <Input
-                            type="time"
-                            value={time}
-                            onChange={(e) => setTime(e.target.value)}
-                            id="time-picker-optional"
-                            step="1" />
+                            value={name}
+                            onChange={(e) => { setName(e.target.value); setErrors(p => ({ ...p, name: undefined })); }}
+                            placeholder="Enter text"
+                        />
+                        {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
                     </div>
-                    <div className="flex justify-center">
+                </div>
 
-                        <ToggleGroup type="multiple" variant="outline" value={selectedDays} onValueChange={setSelectedDays}>
-                            {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(day => (
-                                <ToggleGroupItem key={day} value={day} className={chipStyle}>
-                                    {day}
-                                </ToggleGroupItem>
-                            ))}
-                        </ToggleGroup>
-                    </div>
+                <p>Command:</p>
+                <div className="flex flex-col gap-1">
+                    <Textarea
+                        value={content}
+                        onChange={(e) => { setContent(e.target.value); setErrors(p => ({ ...p, content: undefined })); }}
+                        placeholder="Enter Command"
+                        className="break-all whitespace-pre-wrap"
+                    />
+                    {errors.content && <p className="text-destructive text-xs">{errors.content}</p>}
+                </div>
 
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                        </DialogClose>
-                        <Button type="submit" onClick={add_task}><Plus></Plus>Add</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </form>
+                <Separator />
+
+                <div className="flex gap-2 items-center">
+                    <p className="font-bold">Schedule:</p>
+                    <Input
+                        type="time"
+                        value={time}
+                        onChange={(e) => setTime(e.target.value)}
+                        step="1"
+                    />
+                </div>
+
+                <div className="flex flex-col items-center gap-1">
+                    <ToggleGroup type="multiple" variant="outline" value={selectedDays}
+                        onValueChange={(v) => { setSelectedDays(v); setErrors(p => ({ ...p, days: undefined })); }}>
+                        {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(day => (
+                            <ToggleGroupItem key={day} value={day} className={chipStyle}>
+                                {day}
+                            </ToggleGroupItem>
+                        ))}
+                    </ToggleGroup>
+                    {errors.days && <p className="text-destructive text-xs">{errors.days}</p>}
+                </div>
+
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button onClick={add_task}><Plus /> Add</Button>
+                </DialogFooter>
+            </DialogContent>
         </Dialog>
-    )
+    );
 }
+
 function AddExecutable() {
     const [name, setName] = useState("");
     const [content, setContent] = useState("");
     const [time, setTime] = useState("00:00:00");
-    const [selectedDays, setSelectedDays] = useState<string[]>([])
+    const [selectedDays, setSelectedDays] = useState<string[]>([]);
+    const [errors, setErrors] = useState<{ name?: string; content?: string; days?: string }>({});
+
     async function add_task() {
-        await invoke("add_task", { name: name, time: time, kind: "executable", content: content, day: JSON.stringify(selectedDays) })
+        const newErrors: typeof errors = {};
+        if (!name.trim()) newErrors.name = "Title is required";
+        if (!content.trim()) newErrors.content = "Executable path is required";
+        if (selectedDays.length === 0) newErrors.days = "Select at least one day";
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        setErrors({});
+        await invoke("add_task", { name, time, kind: "executable", content, day: JSON.stringify(selectedDays) });
     }
+
     const chipStyle = `
-  rounded-full px-4 py-1 border
-  data-[state=on]:bg-primary
-  data-[state=on]:text-white
-  data-[state=on]:border-primary
-  dark:data-[state=on]:text-black
-`
+        rounded-full px-4 py-1 border
+        data-[state=on]:bg-primary
+        data-[state=on]:text-white
+        data-[state=on]:border-primary
+        dark:data-[state=on]:text-black
+    `;
+
     async function chooseFile() {
         const file = await open({
             multiple: false,
@@ -344,68 +410,82 @@ function AddExecutable() {
             ]
         });
         if (file) {
-            setContent(file)
+            setContent(file);
+            setErrors(p => ({ ...p, content: undefined }));
         }
     }
 
     return (
         <Dialog>
-            <form>
-                <DialogTrigger asChild>
+            <DialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <AppWindow /> Executable
+                </DropdownMenuItem>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-sm">
+                <DialogHeader>
+                    <DialogTitle>Add Executable</DialogTitle>
+                </DialogHeader>
 
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}><AppWindow></AppWindow>Executable</DropdownMenuItem>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-sm">
-                    <DialogHeader>
-                        <div className="flex items-center">
-                            <DialogTitle>Add Executable</DialogTitle>
-                        </div>
-
-                    </DialogHeader>
-                    <div className="flex gap-2 items-center">
-                        Title:
-                        <Input value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Enter text" />
-                    </div>
-                    <div className="flex gap-2 items-center">
-                        <Button size={"icon"} onClick={chooseFile}>
-                            <Folder></Folder>
-                        </Button>
-                        <Input value={content}
-                            onChange={(e) => setContent(e.target.value)} placeholder="Enter Location" />
-                    </div>
-                    <Separator></Separator>
-                    <div className="flex gap-2 items-center">
-
-                        <p className="font-bold">Schedule:</p>
+                <div className="flex gap-2 items-center">
+                    Title:
+                    <div className="flex flex-col w-full">
                         <Input
-                            type="time"
-                            value={time}
-                            onChange={(e) => setTime(e.target.value)}
-                            id="time-picker-optional"
-                            step="1" />
+                            value={name}
+                            onChange={(e) => { setName(e.target.value); setErrors(p => ({ ...p, name: undefined })); }}
+                            placeholder="Enter text"
+                        />
+                        {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
                     </div>
-                    <div className="flex justify-center">
+                </div>
 
-                        <ToggleGroup type="multiple" variant="outline" value={selectedDays} onValueChange={setSelectedDays}>
-                            {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(day => (
-                                <ToggleGroupItem key={day} value={day} className={chipStyle}>
-                                    {day}
-                                </ToggleGroupItem>
-                            ))}
-                        </ToggleGroup>
+                <div className="flex flex-col gap-1">
+                    <div className="flex gap-2 items-center">
+                        <Button size="icon" onClick={chooseFile}>
+                            <Folder />
+                        </Button>
+                        <Input
+                            value={content}
+                            onChange={(e) => { setContent(e.target.value); setErrors(p => ({ ...p, content: undefined })); }}
+                            placeholder="Enter Location"
+                        />
                     </div>
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                        </DialogClose>
-                        <Button onClick={add_task} type="submit"><Plus></Plus>Add</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </form>
+                    {errors.content && <p className="text-destructive text-xs">{errors.content}</p>}
+                </div>
+
+                <Separator />
+
+                <div className="flex gap-2 items-center">
+                    <p className="font-bold">Schedule:</p>
+                    <Input
+                        type="time"
+                        value={time}
+                        onChange={(e) => setTime(e.target.value)}
+                        step="1"
+                    />
+                </div>
+
+                <div className="flex flex-col items-center gap-1">
+                    <ToggleGroup type="multiple" variant="outline" value={selectedDays}
+                        onValueChange={(v) => { setSelectedDays(v); setErrors(p => ({ ...p, days: undefined })); }}>
+                        {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(day => (
+                            <ToggleGroupItem key={day} value={day} className={chipStyle}>
+                                {day}
+                            </ToggleGroupItem>
+                        ))}
+                    </ToggleGroup>
+                    {errors.days && <p className="text-destructive text-xs">{errors.days}</p>}
+                </div>
+
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button onClick={add_task}><Plus /> Add</Button>
+                </DialogFooter>
+            </DialogContent>
         </Dialog>
-    )
+    );
 }
 
 export { MoreInfoDialog, EditTaskDialog, DeleteTaskDialog, AddCommand, AddExecutable };

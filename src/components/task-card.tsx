@@ -40,7 +40,7 @@ export function TaskCard({ id, name, time, kind, content, day }: TaskCardProps) 
                 </CardAction>
             </CardHeader>
             <CardContent>
-                Next Trigger: {time}
+                Trigger At: {time}
             </CardContent>
         </Card>
     );
